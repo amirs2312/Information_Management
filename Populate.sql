@@ -55,7 +55,7 @@ CALL Insert_Maintenance_Schedules(); -- Giving the devices that need maintenance
 INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) VALUES ('owner@example.com', 'hashed_password', 'Alice', 'Anderson', 'Owner');
 
 INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) VALUES ('admin1@example.com', 'sjdfjsgidf', 'Bob', 'Baker', 'Admin');
-INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) VALUES ('admin2@example.com', '', 'krnhfbd', 'Chaplin', 'Admin');
+INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) VALUES ('admin2@example.com', 'okyaokay', 'krnhfbd', 'Chaplin', 'Admin');
 INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) VALUES ('family1@example.com', 'fejrgngr', 'David', 'Doe', 'Family');
 INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) VALUES ('family2@example.com', '2fiun293', 'Eve', 'Evans', 'Family');
 INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) VALUES ('family3@example.com', 'f4ifen0', 'Frank', 'Foster', 'Family');
@@ -65,12 +65,8 @@ INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) V
 INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) VALUES ('admin3@example.com', 'feofw', 'John', 'Johnson', 'Admin');
 INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) VALUES ('family4@example.com', 'wefeoinf', 'Koola', 'Kadaraan', 'Family');
 INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) VALUES ('bowied@example.com', 'feoef', 'David', 'Bowie', 'Guest');
-INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) VALUES ('admin4@example.com', 'weofi', 'Mindy', 'Moore', 'Admin');
-INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) VALUES ('family5@example.com', 'sodd', 'Ned', 'Norton', 'Family');
-INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) VALUES ('guest5@example.com', 'hashed_password', 'Oprah', 'Olsen', 'Guest');
 
 -- Creates a single rule and applies it to all the listed devices
-CALL Create_Rule_And_Apply_To_Devices('Evening Routine', 'Turn off lights and lock doors in the evening', 'evening', 1, '2,3,5,8,10');
+CALL Create_Rule_And_Apply_To_Devices('Evening Routine', 'Turn off lights and lock doors in the evening', 'evening', 'On','1', '2,3,5,8,10');
 
--- Checks User roles and assigns them corresponding devices
-CALL Assign_Devices_To_All_Users();
+

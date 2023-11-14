@@ -12,10 +12,11 @@ DROP PROCEDURE IF EXISTS Insert_Light;
 DROP PROCEDURE IF EXISTS Insert_Camera;
 DROP PROCEDURE IF EXISTS Insert_TV;
 DROP PROCEDURE IF EXISTS Insert_Thermostat;
-DROP PROCEDURE IF EXISTS Insert_Door_Lock;
+DROP PROCEDURE IF EXISTS Insert_DoorLock;
 DROP PROCEDURE IF EXISTS Insert_User;
 DROP PROCEDURE IF EXISTS Create_Rule_And_Apply_To_Devices;
 DROP PROCEDURE IF EXISTS Assign_Devices_To_User;
+DROP PROCEDURE IF EXISTS Assign_Devices_To_ALL_Users;
 
 -- Procedure for inserting lights
 DELIMITER //
@@ -225,13 +226,14 @@ BEGIN
 END;
 //
 
--- Procedure for populating 
+-- Procedure for populating both the Automationrule table and the ruledevice table
 CREATE PROCEDURE Create_Rule_And_Apply_To_Devices(
     IN _name VARCHAR(255),
     IN _description TEXT,
     IN _trigger_condition ENUM('daytime', 'evening', 'nightime', 'morning', 'away', 'maintenance'),
+    IN _trigger_type ENUM('On', 'Off'),
     IN _creator_id INT,
-    IN _device_ids TEXT -- A comma separated list of device IDs
+    IN _device_ids TEXT -- A comma-separated list of device IDs
 )
 BEGIN
     DECLARE _rule_id INT;
@@ -240,12 +242,12 @@ BEGIN
     DECLARE _next_comma INT;
     DECLARE _sub_str_length INT;
 
-    -- Insert the rule into the AutomationRule table
-    INSERT INTO AutomationRule (name, description, trigger_condition, fk_creator_id)
-    VALUES (_name, _description, _trigger_condition, _creator_id);
+    -- Insert the rule into the AutomationRule table with trigger_type
+    INSERT INTO AutomationRule (name, description, trigger_condition, trigger_type, fk_creator_id)
+    VALUES (_name, _description, _trigger_condition, _trigger_type, _creator_id);
     SET _rule_id = LAST_INSERT_ID();
 
-    -- Initialize loop variables
+    -- Initialize loop variables for device IDs
     SET _device_ids = CONCAT(_device_ids, ',');
     SET _index = 1;
 
@@ -263,9 +265,11 @@ BEGIN
         SET _index = _next_comma + 1;
     END WHILE;
 END;
-//
 
 
+-- The procedures commented out here I might need eventually
+
+/*
 CREATE PROCEDURE Assign_Devices_To_User(IN _user_id INT)
 BEGIN
     DECLARE _role VARCHAR(255);
@@ -323,9 +327,12 @@ BEGIN
             LEAVE assign_loop;
         END IF;
 
-        CALL AssignDevicesToUser(_user_id);
+        CALL Assign_Devices_To_User(_user_id);
     END LOOP;
 
     CLOSE cur;
 END;
 //
+
+*/
+

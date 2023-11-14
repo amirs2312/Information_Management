@@ -10,7 +10,7 @@ USE SmartHomeDB;
 
 CREATE TABLE Device (
     device_id INT AUTO_INCREMENT PRIMARY KEY,
-    model VARCHAR(255) NOT NULL,
+    model ENUM('Camera', 'Light','Thermostat', 'TV', 'DoorLock') NOT NULL,
     status ENUM('on', 'off', 'standby', 'not_responding') NOT NULL,
     location VARCHAR(255) NOT NULL
 );
@@ -124,6 +124,7 @@ CREATE TABLE AutomationRule (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     trigger_condition ENUM('daytime', 'evening', 'nightime', 'morning', 'away', 'maintenance') NOT NULL,
+    trigger_type ENUM('On', 'Off'),
     fk_creator_id INT NOT NULL,
     FOREIGN KEY (fk_creator_id) REFERENCES SmartHome_User(user_id)
 );
