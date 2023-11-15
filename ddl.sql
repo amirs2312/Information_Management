@@ -11,7 +11,7 @@ USE SmartHomeDB;
 CREATE TABLE Device (
     device_id INT AUTO_INCREMENT PRIMARY KEY,
     model ENUM('Camera', 'Light','Thermostat', 'TV', 'DoorLock') NOT NULL,
-    status ENUM('on', 'off', 'standby', 'not_responding') NOT NULL,
+    status ENUM('On', 'Off', 'standby', 'not_responding') NOT NULL,
     location VARCHAR(255) NOT NULL
 );
 
@@ -37,7 +37,7 @@ CREATE TABLE Light (
     red TINYINT UNSIGNED NOT NULL,
     green TINYINT UNSIGNED NOT NULL,
     blue TINYINT UNSIGNED NOT NULL,
-    FOREIGN KEY (device_id) REFERENCES Device(device_id)
+    FOREIGN KEY (device_id) REFERENCES Device(device_id) ON DELETE CASCADE
 );
 
 
@@ -48,7 +48,7 @@ CREATE TABLE Thermostat (
     device_id INT PRIMARY KEY,
     target_temp DECIMAL(5,2) NOT NULL,
     current_temp DECIMAL(5,2) NOT NULL,
-    FOREIGN KEY (device_id) REFERENCES Device(device_id)
+    FOREIGN KEY (device_id) REFERENCES Device(device_id) ON DELETE CASCADE
 );
 
 
@@ -60,7 +60,7 @@ CREATE TABLE Camera (
     resolution VARCHAR(255) NOT NULL,
     field_of_view INT NOT NULL,
     storage_capacity_gb INT NOT NULL,
-    FOREIGN KEY (device_id) REFERENCES Device(device_id)
+    FOREIGN KEY (device_id) REFERENCES Device(device_id) ON DELETE CASCADE
 );
 
 
@@ -69,10 +69,10 @@ CREATE TABLE Camera (
 
 CREATE TABLE MaintenanceSchedule (
     schedule_id INT AUTO_INCREMENT PRIMARY KEY,
-    last_maintenance_date DATE NOT NULL,
+    last_maintenance_date DATE , -- If the device was just newly inserted a maintenance 
     next_maintenance_date DATE NOT NULL,
     device_id INT UNIQUE NOT NULL,
-    FOREIGN KEY (device_id) REFERENCES Device(device_id)
+    FOREIGN KEY (device_id) REFERENCES Device(device_id) ON DELETE CASCADE
 );
 
 
@@ -84,7 +84,7 @@ CREATE TABLE EnergyLog (
     log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     energy_consumed DECIMAL(10,2) NOT NULL,
     device_id INT NOT NULL,
-    FOREIGN KEY (device_id) REFERENCES Device(device_id)
+    FOREIGN KEY (device_id) REFERENCES Device(device_id) ON DELETE CASCADE
 );
 
 
@@ -95,8 +95,8 @@ CREATE TABLE UserDeviceControl (
     user_id INT NOT NULL,
     device_id INT NOT NULL,
     PRIMARY KEY (user_id, device_id),
-    FOREIGN KEY (user_id) REFERENCES SmartHome_User(user_id),
-    FOREIGN KEY (device_id) REFERENCES Device(device_id)
+    FOREIGN KEY (user_id) REFERENCES SmartHome_User(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (device_id) REFERENCES Device(device_id) ON DELETE CASCADE
 );
 
 
@@ -107,7 +107,7 @@ CREATE TABLE DoorLock (
     device_id INT PRIMARY KEY,
     door_code VARCHAR(255) ,
     lock_type ENUM('keypad', 'biometric', 'key', 'app') NOT NULL,
-    FOREIGN KEY (device_id) REFERENCES Device(device_id)
+    FOREIGN KEY (device_id) REFERENCES Device(device_id) ON DELETE CASCADE
 );
 
 
@@ -115,7 +115,7 @@ CREATE TABLE TV (
     device_id INT PRIMARY KEY,
     screen_size INT NOT NULL,
     resolution VARCHAR(255) NOT NULL,
-    FOREIGN KEY (device_id) REFERENCES Device(device_id)
+    FOREIGN KEY (device_id) REFERENCES Device(device_id) ON DELETE CASCADE
 );
 
 
@@ -126,7 +126,7 @@ CREATE TABLE AutomationRule (
     trigger_condition ENUM('daytime', 'evening', 'nightime', 'morning', 'away', 'maintenance') NOT NULL,
     trigger_type ENUM('On', 'Off'),
     fk_creator_id INT NOT NULL,
-    FOREIGN KEY (fk_creator_id) REFERENCES SmartHome_User(user_id)
+    FOREIGN KEY (fk_creator_id) REFERENCES SmartHome_User(user_id) ON DELETE CASCADE
 );
 
 
@@ -136,6 +136,6 @@ CREATE TABLE DeviceAutomation (
     rule_id INT NOT NULL,
     device_id INT NOT NULL,
     PRIMARY KEY (rule_id, device_id),
-    FOREIGN KEY (rule_id) REFERENCES AutomationRule(rule_id),
-    FOREIGN KEY (device_id) REFERENCES Device(device_id)
+    FOREIGN KEY (rule_id) REFERENCES AutomationRule(rule_id) ON DELETE CASCADE,
+    FOREIGN KEY (device_id) REFERENCES Device(device_id) ON DELETE CASCADE
 );

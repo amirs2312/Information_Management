@@ -17,6 +17,8 @@ DROP PROCEDURE IF EXISTS Insert_User;
 DROP PROCEDURE IF EXISTS Create_Rule_And_Apply_To_Devices;
 DROP PROCEDURE IF EXISTS Assign_Devices_To_User;
 DROP PROCEDURE IF EXISTS Assign_Devices_To_ALL_Users;
+DROP PROCEDURE IF EXISTS Change_Device_Status;
+DROP PROCEDURE IF EXISTS Change_User_Role;
 
 -- Procedure for inserting lights
 DELIMITER //
@@ -265,11 +267,100 @@ BEGIN
         SET _index = _next_comma + 1;
     END WHILE;
 END;
+//
+
+-- Used in a trigger to automatically decide what entries to make in the userdevice table
+CREATE PROCEDURE Assign_Device_To_User(IN _user_id INT, IN _device_id INT, IN _device_model VARCHAR(255))
+BEGIN
+    DECLARE _role VARCHAR(255);
+
+    -- Retrieve the role of the user
+    SELECT role INTO _role FROM SmartHome_User WHERE user_id = _user_id;
+
+    -- Based on the role, assign the device if it matches the criteria
+    IF _role = 'Guest' AND (_device_model LIKE 'TV%' OR _device_model LIKE 'Light%') THEN
+        INSERT INTO UserDeviceControl (user_id, device_id)
+        VALUES (_user_id, _device_id)
+        ON DUPLICATE KEY UPDATE device_id = VALUES(device_id);
+    ELSEIF _role = 'Family' AND (_device_model LIKE 'TV%' OR _device_model LIKE 'Light%' OR _device_model LIKE 'Thermostat%' OR _device_model LIKE 'Lock%') THEN
+        INSERT INTO UserDeviceControl (user_id, device_id)
+        VALUES (_user_id, _device_id)
+        ON DUPLICATE KEY UPDATE device_id = VALUES(device_id);
+    ELSEIF _role IN ('Admin', 'Owner') THEN
+        -- Admins and Owners get access to all devices
+        INSERT INTO UserDeviceControl (user_id, device_id)
+        VALUES (_user_id, _device_id)
+        ON DUPLICATE KEY UPDATE device_id = VALUES(device_id);
+    END IF;
+END;
+//
+
+
+CREATE PROCEDURE Change_Device_Status(
+    IN _user_id INT,
+    IN _device_id INT,
+    IN _new_status VARCHAR(255)
+)
+BEGIN
+    DECLARE _has_control INT;
+
+    -- Check if the user has control over the device
+    SELECT COUNT(*) INTO _has_control
+    FROM UserDeviceControl
+    WHERE user_id = _user_id AND device_id = _device_id;
+
+    -- If the user has control over the device, update its status
+    IF _has_control > 0 THEN
+        UPDATE Device
+        SET status = _new_status
+        WHERE device_id = _device_id;
+    ELSE
+        -- If the user does not have control, signal an error
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'You do not have permission to change the status of this device.';
+    END IF;
+END;
+//
 
 
 -- The procedures commented out here I might need eventually
 
-/*
+CREATE PROCEDURE Change_User_Role(
+    IN acting_user_id INT,
+    IN target_user_id INT,
+    IN new_role VARCHAR(255)
+)
+BEGIN
+    DECLARE acting_role VARCHAR(255);
+    DECLARE target_role VARCHAR(255);
+    DECLARE role_hierarchy INT;
+
+    -- Define the hierarchy of roles
+    SET role_hierarchy = FIELD(new_role, 'Guest', 'Family', 'Admin', 'Owner');
+
+    -- Retrieve the roles of the acting and target users
+    SELECT role INTO acting_role FROM SmartHome_User WHERE user_id = acting_user_id;
+    SELECT role INTO target_role FROM SmartHome_User WHERE user_id = target_user_id;
+
+    -- Check if the acting user's role is higher in the hierarchy than the target user's role
+    IF FIELD(acting_role, 'Guest', 'Family', 'Admin', 'Owner') <= role_hierarchy THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'You do not have permission to change this user’s role.';
+    ELSEIF new_role = 'Owner' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'You cannot promote a user to Owner.';
+    ELSEIF target_role = 'Owner' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'You cannot demote the Owner.';
+    ELSEIF target_role = 'Guest' AND new_role = 'Demote' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'You cannot demote a Guest.';
+    ELSE
+        -- Perform the role change
+        UPDATE SmartHome_User
+        SET role = new_role
+        WHERE user_id = target_user_id;
+    END IF;
+END;
+//
+
+
 CREATE PROCEDURE Assign_Devices_To_User(IN _user_id INT)
 BEGIN
     DECLARE _role VARCHAR(255);
@@ -311,28 +402,3 @@ BEGIN
     
 END;
 //
-
-CREATE PROCEDURE Assign_Devices_To_All_Users()
-BEGIN
-    DECLARE done INT DEFAULT FALSE;
-    DECLARE _user_id INT;
-    DECLARE cur CURSOR FOR SELECT user_id FROM SmartHome_User;
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
-
-    OPEN cur;
-
-    assign_loop: LOOP
-        FETCH cur INTO _user_id;
-        IF done THEN
-            LEAVE assign_loop;
-        END IF;
-
-        CALL Assign_Devices_To_User(_user_id);
-    END LOOP;
-
-    CLOSE cur;
-END;
-//
-
-*/
-

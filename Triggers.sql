@@ -66,6 +66,43 @@ BEGIN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Conflicting automation rules detected: cannot have opposite actions for the same device and condition.';
     END IF;
 END;
+//
 
+
+CREATE TRIGGER After_Device_Insert
+AFTER INSERT ON Device
+FOR EACH ROW
+BEGIN
+    DECLARE _user_id INT;
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE cur CURSOR FOR SELECT user_id FROM SmartHome_User;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN cur;
+
+    assign_loop: LOOP
+        FETCH cur INTO _user_id;
+        IF done THEN
+            LEAVE assign_loop;
+        END IF;
+
+        
+        CALL Assign_Device_To_User(_user_id, NEW.device_id, NEW.model);
+    END LOOP;
+
+    CLOSE cur;
+END;
+//
+
+
+
+
+CREATE TRIGGER After_User_Insert
+AFTER INSERT ON SmartHome_User
+FOR EACH ROW
+BEGIN
+    -- Call the Assign_Devices_To_User procedure to assign existing devices to the new user
+    CALL Assign_Devices_To_User(NEW.user_id);
+END;
 //
 DELIMITER ;

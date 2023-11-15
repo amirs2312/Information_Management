@@ -8,8 +8,13 @@ USE SmartHomeDB;
 DROP VIEW IF EXISTS View_Device_Energy_Usage;
 DROP VIEW IF EXISTS View_Upcoming_Maintenance;
 DROP VIEW IF EXISTS View_Automation_Rules_Summary;
-DROP VIEW IF EXISTS View_Automation_Rules_Summary;
 DROP VIEW IF EXISTS View_User_Roles;
+DROP VIEW IF EXISTS View_device_night_status;
+DROP VIEW IF EXISTS View_device_morning_status;
+DROP VIEW IF EXISTS View_device_evening_status;
+DROP VIEW IF EXISTS View_device_maintenance_status;
+DROP VIEW IF EXISTS View_device_away_status;
+DROP VIEW IF EXISTS View_device_daytime_status;
 
 -- A view that shows how much a device costs
 CREATE VIEW View_Device_Energy_Usage AS
@@ -75,5 +80,136 @@ GROUP BY
 
     
 
+CREATE VIEW View_device_night_status AS
+SELECT 
+    d.model,
+    d.location,
+    -- Use the trigger_type as night_status if a nighttime rule applies, else use the default status
+    COALESCE(night_rules.trigger_type, d.status) AS night_status
+FROM 
+    Device d
+LEFT JOIN 
+    (SELECT 
+        da.device_id, 
+        -- Assuming a column that determines what the rule does (e.g., turns device 'On' or 'Off')
+        ar.trigger_type  -- Include this column to determine the status effect of the rule
+     FROM 
+        DeviceAutomation da
+     JOIN 
+        AutomationRule ar ON da.rule_id = ar.rule_id
+     WHERE 
+        ar.trigger_condition = 'nighttime') AS night_rules ON d.device_id = night_rules.device_id;
+        
+        
+        
+        
+CREATE VIEW View_device_evening_status AS
+SELECT 
+    d.model,
+    d.location,
+    -- Use the trigger_type as night_status if a nighttime rule applies, else use the default status
+    COALESCE(evening_rules.trigger_type, d.status) AS evening_status
+FROM 
+    Device d
+LEFT JOIN 
+    (SELECT 
+        da.device_id, 
+        -- Assuming a column that determines what the rule does (e.g., turns device 'On' or 'Off')
+        ar.trigger_type  -- Include this column to determine the status effect of the rule
+     FROM 
+        DeviceAutomation da
+     JOIN 
+        AutomationRule ar ON da.rule_id = ar.rule_id
+     WHERE 
+        ar.trigger_condition = 'evening') AS evening_rules ON d.device_id = evening_rules.device_id;
+        
 
-    
+
+
+CREATE VIEW View_device_away_status AS
+SELECT 
+    d.model,
+    d.location,
+    -- Use the trigger_type as night_status if a nighttime rule applies, else use the default status
+    COALESCE(away_rules.trigger_type, d.status) AS away_status
+FROM 
+    Device d
+LEFT JOIN 
+    (SELECT 
+        da.device_id, 
+        -- Assuming a column that determines what the rule does (e.g., turns device 'On' or 'Off')
+        ar.trigger_type  -- Include this column to determine the status effect of the rule
+     FROM 
+        DeviceAutomation da
+     JOIN 
+        AutomationRule ar ON da.rule_id = ar.rule_id
+     WHERE 
+        ar.trigger_condition = 'away') AS away_rules ON d.device_id = away_rules.device_id;
+
+
+
+
+CREATE VIEW View_device_daytime_status AS
+SELECT 
+    d.model,
+    d.location,
+    -- Use the trigger_type as night_status if a nighttime rule applies, else use the default status
+    COALESCE(daytime_rules.trigger_type, d.status) AS daytime_status
+FROM 
+    Device d
+LEFT JOIN 
+    (SELECT 
+        da.device_id, 
+        -- Assuming a column that determines what the rule does (e.g., turns device 'On' or 'Off')
+        ar.trigger_type  -- Include this column to determine the status effect of the rule
+     FROM 
+        DeviceAutomation da
+     JOIN 
+        AutomationRule ar ON da.rule_id = ar.rule_id
+     WHERE 
+        ar.trigger_condition = 'daytime') AS daytime_rules ON d.device_id = daytime_rules.device_id;	
+   
+   
+   
+   CREATE VIEW View_device_morning_status AS
+SELECT 
+    d.model,
+    d.location,
+    -- Use the trigger_type as night_status if a nighttime rule applies, else use the default status
+    COALESCE(morning_rules.trigger_type, d.status) AS morning_status
+FROM 
+    Device d
+LEFT JOIN 
+    (SELECT 
+        da.device_id, 
+        -- Assuming a column that determines what the rule does (e.g., turns device 'On' or 'Off')
+        ar.trigger_type  -- Include this column to determine the status effect of the rule
+     FROM 
+        DeviceAutomation da
+     JOIN 
+        AutomationRule ar ON da.rule_id = ar.rule_id
+     WHERE 
+        ar.trigger_condition = 'morning') AS morning_rules ON d.device_id = morning_rules.device_id;
+        
+        
+        
+        
+CREATE VIEW View_device_maintenance_status AS
+SELECT 
+    d.model,
+    d.location,
+    -- Use the trigger_type as night_status if a nighttime rule applies, else use the default status
+    COALESCE(maintenance_rules.trigger_type, d.status) AS maintenance_status
+FROM 
+    Device d
+LEFT JOIN 
+    (SELECT 
+        da.device_id, 
+        -- Assuming a column that determines what the rule does (e.g., turns device 'On' or 'Off')
+        ar.trigger_type  -- Include this column to determine the status effect of the rule
+     FROM 
+        DeviceAutomation da
+     JOIN 
+        AutomationRule ar ON da.rule_id = ar.rule_id
+     WHERE 
+        ar.trigger_condition = 'maintenance') AS maintenance_rules ON d.device_id = maintenance_rules.device_id;
