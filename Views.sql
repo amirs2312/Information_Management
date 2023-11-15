@@ -15,6 +15,11 @@ DROP VIEW IF EXISTS View_device_evening_status;
 DROP VIEW IF EXISTS View_device_maintenance_status;
 DROP VIEW IF EXISTS View_device_away_status;
 DROP VIEW IF EXISTS View_device_daytime_status;
+DROP VIEW IF EXISTS View_Thermostat_Mode;
+DROP VIEW IF EXISTS View_TV_Status;
+DROP VIEW IF EXISTS View_Camera_Status;
+DROP VIEW IF EXISTS View_DoorLock_Status;
+DROP VIEW IF EXISTS View_Light_Status;
 
 -- A view that shows how much a device costs
 CREATE VIEW View_Device_Energy_Usage AS
@@ -85,7 +90,11 @@ SELECT
     d.model,
     d.location,
     -- Use the trigger_type as night_status if a nighttime rule applies, else use the default status
-    COALESCE(night_rules.trigger_type, d.status) AS night_status
+    COALESCE(night_rules.trigger_type, d.status) AS night_status,
+     CASE
+        WHEN night_rules.trigger_type IS NOT NULL THEN 'Rule'
+        ELSE 'Default'
+    END AS status_source
 FROM 
     Device d
 LEFT JOIN 
@@ -108,7 +117,11 @@ SELECT
     d.model,
     d.location,
     -- Use the trigger_type as night_status if a nighttime rule applies, else use the default status
-    COALESCE(evening_rules.trigger_type, d.status) AS evening_status
+    COALESCE(evening_rules.trigger_type, d.status) AS evening_status,
+	CASE
+    WHEN evening_rules.trigger_type IS NOT NULL THEN 'Rule'
+    ELSE 'Default'
+END AS evening_status_source
 FROM 
     Device d
 LEFT JOIN 
@@ -131,7 +144,11 @@ SELECT
     d.model,
     d.location,
     -- Use the trigger_type as night_status if a nighttime rule applies, else use the default status
-    COALESCE(away_rules.trigger_type, d.status) AS away_status
+    COALESCE(away_rules.trigger_type, d.status) AS away_status,
+	CASE
+    WHEN away_rules.trigger_type IS NOT NULL THEN 'Rule'
+    ELSE 'Default'
+END AS away_status_source
 FROM 
     Device d
 LEFT JOIN 
@@ -154,7 +171,11 @@ SELECT
     d.model,
     d.location,
     -- Use the trigger_type as night_status if a nighttime rule applies, else use the default status
-    COALESCE(daytime_rules.trigger_type, d.status) AS daytime_status
+    COALESCE(daytime_rules.trigger_type, d.status) AS daytime_status,
+    CASE
+    WHEN daytime_rules.trigger_type IS NOT NULL THEN 'Rule'
+    ELSE 'Default'
+END AS daytime_status_source
 FROM 
     Device d
 LEFT JOIN 
@@ -176,13 +197,17 @@ SELECT
     d.model,
     d.location,
     -- Use the trigger_type as night_status if a nighttime rule applies, else use the default status
-    COALESCE(morning_rules.trigger_type, d.status) AS morning_status
+    COALESCE(morning_rules.trigger_type, d.status) AS morning_status,
+    CASE
+    WHEN morning_rules.trigger_type IS NOT NULL THEN 'Rule'
+    ELSE 'Default'
+END AS morning_status_source
 FROM 
     Device d
 LEFT JOIN 
     (SELECT 
         da.device_id, 
-        -- Assuming a column that determines what the rule does (e.g., turns device 'On' or 'Off')
+        -- Assuming a column that determines what the rule does 
         ar.trigger_type  -- Include this column to determine the status effect of the rule
      FROM 
         DeviceAutomation da
@@ -199,7 +224,11 @@ SELECT
     d.model,
     d.location,
     -- Use the trigger_type as night_status if a nighttime rule applies, else use the default status
-    COALESCE(maintenance_rules.trigger_type, d.status) AS maintenance_status
+    COALESCE(maintenance_rules.trigger_type, d.status) AS maintenance_status,
+    CASE
+    WHEN maintenance_rules.trigger_type IS NOT NULL THEN 'Rule'
+    ELSE 'Default'
+END AS maintenance_status_source
 FROM 
     Device d
 LEFT JOIN 
@@ -213,3 +242,70 @@ LEFT JOIN
         AutomationRule ar ON da.rule_id = ar.rule_id
      WHERE 
         ar.trigger_condition = 'maintenance') AS maintenance_rules ON d.device_id = maintenance_rules.device_id;
+
+
+CREATE VIEW View_Thermostat_Mode AS
+SELECT 
+    t.device_id,
+    t.target_temp,
+    t.current_temp,
+    CASE
+        WHEN t.current_temp < t.target_temp THEN 'heating'
+        WHEN t.current_temp > t.target_temp THEN 'cooling'
+        ELSE 'neutral'
+    END AS mode
+FROM 
+    Thermostat t;
+    
+    
+    
+    
+    
+    
+CREATE VIEW View_Camera_Status AS
+SELECT 
+    device_id,
+    model,
+    status,
+    location
+FROM 
+    Device
+WHERE 
+    model LIKE '%Camera%';
+
+-- View for Door Locks
+CREATE VIEW View_DoorLock_Status AS
+SELECT 
+    device_id,
+    model,
+    status,
+    location
+FROM 
+    Device
+WHERE 
+    model LIKE '%Lock%';
+
+-- View for Lights
+CREATE VIEW View_Light_Status AS
+SELECT 
+    device_id,
+    model,
+    status,
+    location
+FROM 
+    Device
+WHERE 
+    model LIKE '%Light%';
+
+
+-- View for TVs
+CREATE VIEW View_TV_Status AS
+SELECT 
+    device_id,
+    model,
+    status,
+    location
+FROM 
+    Device
+WHERE 
+    model LIKE '%TV%';

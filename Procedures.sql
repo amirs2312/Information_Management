@@ -15,17 +15,18 @@ DROP PROCEDURE IF EXISTS Insert_Thermostat;
 DROP PROCEDURE IF EXISTS Insert_DoorLock;
 DROP PROCEDURE IF EXISTS Insert_User;
 DROP PROCEDURE IF EXISTS Create_Rule_And_Apply_To_Devices;
-DROP PROCEDURE IF EXISTS Assign_Devices_To_User;
+DROP PROCEDURE IF EXISTS Assign_Device_To_User;
+DROP PROCEDURE IF EXISTS Assign_Devices_To_User; -- I apologise for how similarly they're named
 DROP PROCEDURE IF EXISTS Assign_Devices_To_ALL_Users;
 DROP PROCEDURE IF EXISTS Change_Device_Status;
-DROP PROCEDURE IF EXISTS Change_User_Role;
+DROP PROCEDURE IF EXISTS Transfer_Ownership;
 
 -- Procedure for inserting lights
 DELIMITER //
 
 CREATE PROCEDURE Insert_Light(
     IN _model VARCHAR(255),
-    IN _status ENUM('on', 'off', 'standby', 'not_responding'),
+    IN _status ENUM('On', 'Off', 'standby', 'not_responding'),
     IN _location VARCHAR(255),
     IN _red TINYINT UNSIGNED,
     IN _green TINYINT UNSIGNED,
@@ -48,7 +49,7 @@ END;
 -- Procedure for inserting cameras
 CREATE PROCEDURE Insert_Camera(
     IN _model VARCHAR(255),
-    IN _status ENUM('on', 'off', 'standby', 'not_responding'),
+    IN _status ENUM('On', 'Off', 'standby', 'not_responding'),
     IN _location VARCHAR(255),
     IN _resolution VARCHAR(255),
     IN _field_of_view INT,
@@ -70,7 +71,7 @@ END;
 -- Procedure for inserting Tvs
 CREATE PROCEDURE Insert_TV(
     IN _model VARCHAR(255),
-    IN _status ENUM('on', 'off', 'standby', 'not_responding'),
+    IN _status ENUM('On', 'Off', 'standby', 'not_responding'),
     IN _location VARCHAR(255),
     IN _screen_size INT,
     IN _resolution VARCHAR(255)
@@ -92,7 +93,7 @@ END;
 -- Procedure for inserting thermostats
 CREATE PROCEDURE Insert_Thermostat(
     IN _model VARCHAR(255),
-    IN _status ENUM('on', 'off', 'standby', 'not_responding'),
+    IN _status ENUM('On', 'Off', 'standby', 'not_responding'),
     IN _location VARCHAR(255),
     IN _target_temp DECIMAL(5,2),
     IN _current_temp DECIMAL(5,2)
@@ -204,7 +205,7 @@ BEGIN
     DECLARE cur CURSOR FOR 
         SELECT device_id 
         FROM Device 
-        WHERE model LIKE 'Camera%' OR model LIKE 'Thermostat%';
+        WHERE model LIKE '%Camera%' OR model LIKE '%Thermostat%';
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
     OPEN cur;
@@ -278,11 +279,11 @@ BEGIN
     SELECT role INTO _role FROM SmartHome_User WHERE user_id = _user_id;
 
     -- Based on the role, assign the device if it matches the criteria
-    IF _role = 'Guest' AND (_device_model LIKE 'TV%' OR _device_model LIKE 'Light%') THEN
+    IF _role = 'Guest' AND (_device_model LIKE '%TV%' OR _device_model LIKE '%Light%') THEN
         INSERT INTO UserDeviceControl (user_id, device_id)
         VALUES (_user_id, _device_id)
         ON DUPLICATE KEY UPDATE device_id = VALUES(device_id);
-    ELSEIF _role = 'Family' AND (_device_model LIKE 'TV%' OR _device_model LIKE 'Light%' OR _device_model LIKE 'Thermostat%' OR _device_model LIKE 'Lock%') THEN
+    ELSEIF _role = 'Family' AND (_device_model LIKE '%TV%' OR _device_model LIKE '%Light%' OR _device_model LIKE '%Thermostat%' OR _device_model LIKE '%Lock%') THEN
         INSERT INTO UserDeviceControl (user_id, device_id)
         VALUES (_user_id, _device_id)
         ON DUPLICATE KEY UPDATE device_id = VALUES(device_id);
@@ -325,41 +326,31 @@ END;
 
 -- The procedures commented out here I might need eventually
 
-CREATE PROCEDURE Change_User_Role(
-    IN acting_user_id INT,
-    IN target_user_id INT,
-    IN new_role VARCHAR(255)
+
+CREATE PROCEDURE Transfer_Ownership(
+    IN current_owner_id INT,
+    IN new_owner_id INT
 )
 BEGIN
-    DECLARE acting_role VARCHAR(255);
-    DECLARE target_role VARCHAR(255);
-    DECLARE role_hierarchy INT;
-
-    -- Define the hierarchy of roles
-    SET role_hierarchy = FIELD(new_role, 'Guest', 'Family', 'Admin', 'Owner');
-
-    -- Retrieve the roles of the acting and target users
-    SELECT role INTO acting_role FROM SmartHome_User WHERE user_id = acting_user_id;
-    SELECT role INTO target_role FROM SmartHome_User WHERE user_id = target_user_id;
-
-    -- Check if the acting user's role is higher in the hierarchy than the target user's role
-    IF FIELD(acting_role, 'Guest', 'Family', 'Admin', 'Owner') <= role_hierarchy THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'You do not have permission to change this user’s role.';
-    ELSEIF new_role = 'Owner' THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'You cannot promote a user to Owner.';
-    ELSEIF target_role = 'Owner' THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'You cannot demote the Owner.';
-    ELSEIF target_role = 'Guest' AND new_role = 'Demote' THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'You cannot demote a Guest.';
+    -- Check if the current owner ID actually belongs to the owner
+    IF (SELECT role FROM SmartHome_User WHERE user_id = current_owner_id) != 'Owner' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The current user is not the Owner.';
     ELSE
-        -- Perform the role change
-        UPDATE SmartHome_User
-        SET role = new_role
-        WHERE user_id = target_user_id;
+        -- Begin a transaction to ensure atomicity
+        START TRANSACTION;
+
+        -- Demote the current owner to an admin
+        UPDATE SmartHome_User SET role = 'Admin' WHERE user_id = current_owner_id;
+
+        -- Promote the new owner
+        UPDATE SmartHome_User SET role = 'Owner' WHERE user_id = new_owner_id;
+
+        -- Commit the transaction
+        COMMIT;
     END IF;
 END;
-//
 
+//
 
 CREATE PROCEDURE Assign_Devices_To_User(IN _user_id INT)
 BEGIN
@@ -374,14 +365,14 @@ BEGIN
             -- Guests get TVs and Lights
             INSERT INTO UserDeviceControl (user_id, device_id)
             SELECT _user_id, device_id FROM Device
-            WHERE model LIKE 'TV%' OR model LIKE 'Light%'
+            WHERE model LIKE '%TV%' OR model LIKE '%Light%'
             ON DUPLICATE KEY UPDATE device_id = VALUES(device_id);
         
         WHEN 'Family' THEN
             -- Family gets TVs, Lights, Thermostats, and Locks
             INSERT INTO UserDeviceControl (user_id, device_id)
             SELECT _user_id, device_id FROM Device
-            WHERE model LIKE 'TV%' OR model LIKE 'Light%' OR model LIKE 'Thermostat%' OR model LIKE 'Lock%'
+            WHERE model LIKE '%TV%' OR model LIKE '%Light%' OR model LIKE '%Thermostat%' OR model LIKE '%Lock%'
             ON DUPLICATE KEY UPDATE device_id = VALUES(device_id);
         
         WHEN 'Admin' THEN

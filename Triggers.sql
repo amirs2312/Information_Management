@@ -7,6 +7,8 @@ USE SmartHomeDB;
 DROP TRIGGER IF EXISTS Owner_Delete_Check;
 DROP TRIGGER IF EXISTS Owner_Insert_Check;
 DROP TRIGGER IF EXISTS Prevent_Conflicting_Rules;
+DROP TRIGGER IF EXISTS After_User_Insert;
+DROP TRIGGER IF EXISTS After_Device_Insert;
 
 DELIMITER //
 

@@ -10,7 +10,7 @@ USE SmartHomeDB;
 
 CREATE TABLE Device (
     device_id INT AUTO_INCREMENT PRIMARY KEY,
-    model ENUM('Camera', 'Light','Thermostat', 'TV', 'DoorLock') NOT NULL,
+    model VARCHAR(255) NOT NULL,
     status ENUM('On', 'Off', 'standby', 'not_responding') NOT NULL,
     location VARCHAR(255) NOT NULL
 );

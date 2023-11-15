@@ -3,34 +3,34 @@ USE SmartHomeDB;
 -- Code for actually populating my database
 
 -- Insertion Block.... For devices
-CALL Insert_Light('Smart Bulb V4', 'on', 'Living Room', 255, 255, 255);
-CALL Insert_Light('Smart Bulb V4', 'off', 'Bedroom', 0, 0, 0);
-CALL Insert_Light('Smart Bulb V4', 'on', 'Kitchen', 255, 255, 255);
-CALL Insert_Light('Smart Bulb V4', 'off', 'Bathroom', 0, 0, 0);
-CALL Insert_Light('Smart Bulb V4', 'on', 'Dining Room', 255, 255, 255);
-CALL Insert_Light('Smart Bulb V4', 'off', 'Garage', 0, 0, 0);
-CALL Insert_Light('Smart Bulb V4', 'on', 'Office', 255, 255, 255);
+CALL Insert_Light('Smart Light', 'On', 'Living Room', 255, 255, 255);
+CALL Insert_Light('Smart Light', 'Off', 'Bedroom', 0, 0, 0);
+CALL Insert_Light('Smart Light', 'On', 'Kitchen', 255, 255, 255);
+CALL Insert_Light('Smart Light', 'Off', 'Bathroom', 0, 0, 0);
+CALL Insert_Light('Smart Light', 'On', 'Dining Room', 255, 255, 255);
+CALL Insert_Light('Smart Light ', 'Off', 'Garage', 0, 0, 0);
+CALL Insert_Light('Smart Light', 'On', 'Office', 255, 255, 255);
 
-CALL Insert_Camera('Security Camera V5', 'off', 'Front Gate', '1080p', 120, 64);
-CALL Insert_Camera('Security Camera V5', 'on', 'Backyard', '720p', 90, 32);
-CALL Insert_Camera('Security Camera V5', 'off', 'Garage', '1080p', 120, 128);
-CALL Insert_Camera('Security Camera V5', 'on', 'Living Room', '4K', 180, 256);
-CALL Insert_Camera('Security Camera V5', 'off', 'Front Door', '1080p', 120, 64);
-CALL Insert_Camera('Security Camera V5', 'on', 'Patio', '720p', 90, 32);
-CALL Insert_Camera('Security Camera V5', 'off', 'Balcony', '4K', 180, 256);
+CALL Insert_Camera('Security Camera V5', 'Off', 'Front Gate', '1080p', 120, 64);
+CALL Insert_Camera('Security Camera V5', 'On', 'Backyard', '720p', 90, 32);
+CALL Insert_Camera('Security Camera V2', 'Off', 'Garage', '1080p', 120, 128);
+CALL Insert_Camera('Security Camera V1', 'On', 'Living Room', '4K', 180, 256);
+CALL Insert_Camera('Security Camera V5', 'Off', 'Front Door', '1080p', 120, 64);
+CALL Insert_Camera('Security Camera V3', 'On', 'Patio', '720p', 90, 32);
+CALL Insert_Camera('Security Camera V4', 'Off', 'Balcony', '4K', 180, 256);
 
-CALL Insert_Thermostat('EcoThermostat T200', 'on', 'Living Room', 72.0, 71.0);
-CALL Insert_Thermostat('EcoThermostat T200', 'off', 'Bedroom', 69.0, 69.0);
-CALL Insert_Thermostat('EcoThermostat T200', 'on', 'Kitchen', 70.0, 70.5);
-CALL Insert_Thermostat('EcoThermostat T200', 'off', 'Basement', 67.0, 66.5);
-CALL Insert_Thermostat('EcoThermostat T200', 'on', 'Office', 71.0, 70.0);
+CALL Insert_Thermostat('EcoThermostat T100', 'On', 'Living Room', 72.0, 71.0);
+CALL Insert_Thermostat('EcoThermostat T200', 'Off', 'Bedroom', 69.0, 69.0);
+CALL Insert_Thermostat('EcoThermostat T300', 'On', 'Kitchen', 70.0, 70.5);
+CALL Insert_Thermostat('EcoThermostat T400', 'Off', 'Basement', 67.0, 66.5);
+CALL Insert_Thermostat('EcoThermostat T500', 'On', 'Office', 71.0, 70.0);
 
-CALL Insert_TV('SuperView 4K', 'off', 'Living Room', 55, '4K');
-CALL Insert_TV('SuperView 4K', 'off', 'Master Bedroom', 50, '1080p');
-CALL Insert_TV('SuperView 4K', 'off', 'Guest Room', 42, '720p');
-CALL Insert_TV('SuperView 4K', 'off', 'Kitchen', 32, '720p');
-CALL Insert_TV('SuperView 4K', 'off', 'Basement', 65, '4K');
-CALL Insert_TV('SuperView 4K', 'off', 'Office', 55, '4K');
+CALL Insert_TV('SuperView 4K TV', 'Off', 'Living Room', 55, '4K');
+CALL Insert_TV('SuperView 4K TV', 'Off', 'Master Bedroom', 50, '1080p');
+CALL Insert_TV('SuperView 4K TV', 'Off', 'Guest Room', 42, '720p');
+CALL Insert_TV('SuperView 4K TV', 'Off', 'Kitchen', 32, '720p');
+CALL Insert_TV('SuperView 4K TV', 'Off', 'Basement', 65, '4K');
+CALL Insert_TV('SuperView 4K TV', 'Off', 'Office', 55, '4K');
 
 CALL Insert_DoorLock('KeypadLock 3000',  'Front Door', 'keypad', '1923');
 CALL Insert_DoorLock('KeypadLock 3000',  'Back Door', 'keypad', '1824');

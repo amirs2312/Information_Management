@@ -8,6 +8,12 @@ CREATE USER IF NOT EXISTS 'owner_user'@'localhost' IDENTIFIED BY 'password_for_o
 CREATE USER IF NOT EXISTS 'family_user'@'localhost' IDENTIFIED BY 'password_for_family_user';
 CREATE USER IF NOT EXISTS 'guest_user'@'localhost' IDENTIFIED BY 'password_for_guest_user';
 
+DROP ROLE IF EXISTS 'admin_role';
+DROP ROLE IF EXISTS 'guest_role';
+DROP ROLE IF EXISTS 'owner_role';
+DROP ROLE IF EXISTS 'family_role';
+
+
 
 CREATE ROLE 'admin_role';
 CREATE ROLE 'owner_role';
@@ -22,23 +28,36 @@ GRANT 'guest_role' TO 'guest_user'@'localhost';
 
 
 -- Manipulation of the database will be handled by procedures alone
-REVOKE INSERT ON SmartHomeDB.* FROM 'admin_role', 'owner_role', 'family_role', 'guest_role';
-REVOKE INSERT, UPDATE, DELETE ON SmartHomeDB.* FROM  'family_role', 'guest_role';
 
-REVOKE INSERT ON SmartHomeDB.Device FROM  'admin_role', 'owner_role';
 GRANT EXECUTE ON PROCEDURE SmartHomeDB.Insert_Light TO 'admin_role', 'owner_role';
 GRANT EXECUTE ON PROCEDURE SmartHomeDB.Insert_Camera TO 'admin_role', 'owner_role';
 GRANT EXECUTE ON PROCEDURE SmartHomeDB.Insert_Thermostat TO 'admin_role', 'owner_role';
 GRANT EXECUTE ON PROCEDURE SmartHomeDB.Insert_DoorLock TO 'admin_role', 'owner_role';
 GRANT EXECUTE ON PROCEDURE SmartHomeDB.Insert_TV TO 'admin_role', 'owner_role';
-GRANT EXECUTE ON PROCEDURE SmartHomeDB.Insert_User TO 'owner_role';
-
 GRANT EXECUTE ON PROCEDURE SmartHomeDB.Change_Device_Status TO 'admin_role', 'owner_role', 'family_role', 'guest_role';
-
 GRANT EXECUTE ON PROCEDURE SmartHomeDB.Insert_Energy_Logs TO 'admin_role', 'owner_role';
 GRANT EXECUTE ON PROCEDURE SmartHomeDB.Insert_Maintenance_Schedules TO 'admin_role', 'owner_role';
-GRANT EXECUTE ON PROCEDURE SmartHomeDB.Change_User_Role TO 'admin_role', 'owner_role';
+GRANT EXECUTE ON PROCEDURE SmartHomeDB.Transfer_Ownership TO  'owner_role';
 
+
+
+
+-- View allocation block
+GRANT SELECT ON View_Device_Energy_Usage TO 'admin_role', 'owner_role';
+GRANT SELECT ON View_Upcoming_Maintenance TO 'admin_role', 'owner_role';
+GRANT SELECT ON View_User_Roles TO 'owner_role';
+GRANT SELECT ON View_Automation_Rules_Summary TO 'admin_role', 'owner_role';
+GRANT SELECT ON View_device_night_status TO 'admin_role', 'owner_role', 'family_role';
+GRANT SELECT ON View_device_evening_status TO 'admin_role', 'owner_role', 'family_role';
+GRANT SELECT ON View_device_away_status TO 'admin_role', 'owner_role', 'family_role';
+GRANT SELECT ON View_device_daytime_status TO 'admin_role', 'owner_role', 'family_role';
+GRANT SELECT ON View_device_morning_status TO 'admin_role', 'owner_role', 'family_role';
+GRANT SELECT ON View_device_maintenance_status TO 'admin_role', 'owner_role';
+GRANT SELECT ON View_Thermostat_Mode TO 'admin_role', 'owner_role', 'family_role', 'guest_role';
+GRANT SELECT ON View_Camera_Status TO 'admin_role', 'owner_role';
+GRANT SELECT ON View_DoorLock_Status TO 'admin_role', 'owner_role';
+GRANT SELECT ON View_Light_Status TO 'admin_role', 'owner_role', 'family_role', 'guest_role';
+GRANT SELECT ON View_TV_Status TO 'admin_role', 'owner_role', 'family_role', 'guest_role';
 
 
 
