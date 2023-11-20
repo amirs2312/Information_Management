@@ -98,13 +98,4 @@ END;
 
 
 
-
-CREATE TRIGGER After_User_Insert
-AFTER INSERT ON SmartHome_User
-FOR EACH ROW
-BEGIN
-    -- Call the Assign_Devices_To_User procedure to assign existing devices to the new user
-    CALL Assign_Devices_To_User(NEW.user_id);
-END;
-//
 DELIMITER ;

@@ -3,6 +3,8 @@ USE SmartHomeDB;
 -- Security stuff
 -- Role based access seems most fitting for this kind of database
 
+
+-- These roles here are for testing purposes
 CREATE USER IF NOT EXISTS 'admin_user'@'localhost' IDENTIFIED BY 'password_for_admin_user';
 CREATE USER IF NOT EXISTS 'owner_user'@'localhost' IDENTIFIED BY 'password_for_owner_user';
 CREATE USER IF NOT EXISTS 'family_user'@'localhost' IDENTIFIED BY 'password_for_family_user';
@@ -38,6 +40,7 @@ GRANT EXECUTE ON PROCEDURE SmartHomeDB.Change_Device_Status TO 'admin_role', 'ow
 GRANT EXECUTE ON PROCEDURE SmartHomeDB.Insert_Energy_Logs TO 'admin_role', 'owner_role';
 GRANT EXECUTE ON PROCEDURE SmartHomeDB.Insert_Maintenance_Schedules TO 'admin_role', 'owner_role';
 GRANT EXECUTE ON PROCEDURE SmartHomeDB.Transfer_Ownership TO  'owner_role';
+GRANT EXECUTE ON PROCEDURE SmartHomeDB.Create_User_With_Devices TO  'owner_role';
 
 
 
@@ -45,7 +48,6 @@ GRANT EXECUTE ON PROCEDURE SmartHomeDB.Transfer_Ownership TO  'owner_role';
 -- View allocation block
 GRANT SELECT ON View_Device_Energy_Usage TO 'admin_role', 'owner_role';
 GRANT SELECT ON View_Upcoming_Maintenance TO 'admin_role', 'owner_role';
-GRANT SELECT ON View_User_Roles TO 'owner_role';
 GRANT SELECT ON View_Automation_Rules_Summary TO 'admin_role', 'owner_role';
 GRANT SELECT ON View_device_night_status TO 'admin_role', 'owner_role', 'family_role';
 GRANT SELECT ON View_device_evening_status TO 'admin_role', 'owner_role', 'family_role';
@@ -54,10 +56,6 @@ GRANT SELECT ON View_device_daytime_status TO 'admin_role', 'owner_role', 'famil
 GRANT SELECT ON View_device_morning_status TO 'admin_role', 'owner_role', 'family_role';
 GRANT SELECT ON View_device_maintenance_status TO 'admin_role', 'owner_role';
 GRANT SELECT ON View_Thermostat_Mode TO 'admin_role', 'owner_role', 'family_role', 'guest_role';
-GRANT SELECT ON View_Camera_Status TO 'admin_role', 'owner_role';
-GRANT SELECT ON View_DoorLock_Status TO 'admin_role', 'owner_role';
-GRANT SELECT ON View_Light_Status TO 'admin_role', 'owner_role', 'family_role', 'guest_role';
-GRANT SELECT ON View_TV_Status TO 'admin_role', 'owner_role', 'family_role', 'guest_role';
 
 
 

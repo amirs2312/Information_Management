@@ -393,3 +393,26 @@ BEGIN
     
 END;
 //
+
+
+CREATE PROCEDURE Create_User_With_Devices(
+    IN _email VARCHAR(255),
+    IN _password_hash VARCHAR(255),
+    IN _first_name VARCHAR(255),
+    IN _last_name VARCHAR(255),
+    IN _role ENUM('Guest', 'Family', 'Admin', 'Owner')
+)
+BEGIN
+    DECLARE _user_id INT;
+
+    -- Insert the new user into the SmartHome_User table
+    INSERT INTO SmartHome_User (email, password_hash, first_name, last_name, role) 
+    VALUES (_email, _password_hash, _first_name, _last_name, _role);
+
+    -- Get the ID of the newly inserted user
+    SET _user_id = LAST_INSERT_ID();
+
+    -- Call the Assign_Devices_To_User procedure to assign devices to the new user
+    CALL Assign_Devices_To_User(_user_id);
+END;
+//

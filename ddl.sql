@@ -7,7 +7,7 @@ USE SmartHomeDB;
 
 
 
-
+-- The device superclass. Nothing out of the ordinary.
 CREATE TABLE Device (
     device_id INT AUTO_INCREMENT PRIMARY KEY,
     model VARCHAR(255) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE Device (
 
 
 
-
+-- The User entitiy.
 CREATE TABLE SmartHome_User (
 	user_id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL,

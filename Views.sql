@@ -8,7 +8,6 @@ USE SmartHomeDB;
 DROP VIEW IF EXISTS View_Device_Energy_Usage;
 DROP VIEW IF EXISTS View_Upcoming_Maintenance;
 DROP VIEW IF EXISTS View_Automation_Rules_Summary;
-DROP VIEW IF EXISTS View_User_Roles;
 DROP VIEW IF EXISTS View_device_night_status;
 DROP VIEW IF EXISTS View_device_morning_status;
 DROP VIEW IF EXISTS View_device_evening_status;
@@ -16,10 +15,7 @@ DROP VIEW IF EXISTS View_device_maintenance_status;
 DROP VIEW IF EXISTS View_device_away_status;
 DROP VIEW IF EXISTS View_device_daytime_status;
 DROP VIEW IF EXISTS View_Thermostat_Mode;
-DROP VIEW IF EXISTS View_TV_Status;
-DROP VIEW IF EXISTS View_Camera_Status;
-DROP VIEW IF EXISTS View_DoorLock_Status;
-DROP VIEW IF EXISTS View_Light_Status;
+
 
 -- A view that shows how much a device costs
 CREATE VIEW View_Device_Energy_Usage AS
@@ -55,14 +51,6 @@ WHERE
     
     
 -- A simple view that shows all users names next to their roles
-CREATE VIEW View_User_Roles AS
-SELECT
-	u.user_id,
-	u.first_name,
-    u.last_name,
-    u.role
-FROM
-	SmartHome_User u;
     
     
     
@@ -78,8 +66,6 @@ FROM
     AutomationRule ar
 JOIN 
     DeviceAutomation da ON ar.rule_id = da.rule_id
-JOIN 
-    Device d ON da.device_id = d.device_id
 GROUP BY 
     ar.rule_id;
 
@@ -261,51 +247,8 @@ FROM
     
     
     
-    
-CREATE VIEW View_Camera_Status AS
-SELECT 
-    device_id,
-    model,
-    status,
-    location
-FROM 
-    Device
-WHERE 
-    model LIKE '%Camera%';
-
--- View for Door Locks
-CREATE VIEW View_DoorLock_Status AS
-SELECT 
-    device_id,
-    model,
-    status,
-    location
-FROM 
-    Device
-WHERE 
-    model LIKE '%Lock%';
-
--- View for Lights
-CREATE VIEW View_Light_Status AS
-SELECT 
-    device_id,
-    model,
-    status,
-    location
-FROM 
-    Device
-WHERE 
-    model LIKE '%Light%';
 
 
--- View for TVs
-CREATE VIEW View_TV_Status AS
-SELECT 
-    device_id,
-    model,
-    status,
-    location
-FROM 
-    Device
-WHERE 
-    model LIKE '%TV%';
+
+
+
